@@ -4,6 +4,7 @@ const app = express();
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const res = require("express/lib/response");
 const port = process.env.PORT || 5000;
 
 //Midle Werere
@@ -64,7 +65,7 @@ async function run() {
     app.get("/orders", verifyJWT, async (req, res) => {
       const customerEmail = req.query.customerEmail;
       const decodedEmail = req.decoded.email;
-      console.log(decodedEmail);
+      // console.log(decodedEmail);
       if (customerEmail === decodedEmail) {
         const query = { customerEmail: customerEmail };
         const resulte = await ordersCollections.find(query).toArray();
@@ -94,6 +95,32 @@ async function run() {
         { expiresIn: "1h" }
       );
       res.send({ result, token });
+    });
+
+    //Make Admin
+    app.put("/users/admin/:email", verifyJWT, async (req, res) => {
+      const email = req.params.email;
+      //Requster who request make admin
+      const requester = req.decoded.email;
+      const resuedterAccount = await usersCollections.findOne({
+        email: requester,
+      });
+      if (resuedterAccount.role === "admin") {
+        const filter = { email: email };
+        const updateDoc = {
+          $set: { role: "admin" },
+        };
+        const result = await usersCollections.updateOne(filter, updateDoc);
+        res.send(result);
+      } else {
+        return res.status(403).send({ message: "Forbidden Access" });
+      }
+    });
+
+    //Get All Users
+    app.get("/users", verifyJWT, async (req, res) => {
+      const resutl = await usersCollections.find().toArray();
+      res.send(resutl);
     });
   } finally {
   }
