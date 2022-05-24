@@ -19,8 +19,10 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     await client.connect();
+    // All Collection
     const goodsCollections = client.db("manufacture").collection("services");
     const ordersCollections = client.db("manufacture").collection("orders");
+    const usersCollections = client.db("manufacture").collection("users");
 
     // * MongoDb User Collection
     app.get("/goods", async (req, res) => {
@@ -49,6 +51,23 @@ async function run() {
       const query = { customerEmail: customerEmail };
       const resulte = await ordersCollections.find(query).toArray();
       res.send(resulte);
+    });
+
+    // Update or Insert a neW User
+    app.put("/users/:email", async (req, res) => {
+      const email = req.params.email;
+      const user = req.body;
+      const filter = { email: email };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: user,
+      };
+      const result = await usersCollections.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+      res.send(result);
     });
   } finally {
   }
