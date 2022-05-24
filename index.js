@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 require("dotenv").config();
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const port = process.env.PORT || 5000;
 
 //Midle Werere
@@ -16,12 +16,37 @@ const client = new MongoClient(uri, {
   useUnifiedTopology: true,
   serverApi: ServerApiVersion.v1,
 });
-client.connect((err) => {
-  const collection = client.db("test").collection("devices");
-  console.log("mongo db connect succe");
-  // perform actions on the collection object
-  client.close();
-});
+async function run() {
+  try {
+    await client.connect();
+    const goodsCollections = client.db("manufacture").collection("services");
+    const ordersCollections = client.db("manufacture").collection("orders");
+
+    // * MongoDb User Collection
+    app.get("/goods", async (req, res) => {
+      const result = await goodsCollections.find().toArray();
+      res.send(result);
+    });
+    //Call Single product from the database
+    app.get("/goods/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+      const query = { _id: ObjectId(id) };
+      const productDetails = await goodsCollections.findOne(query);
+      res.send(productDetails);
+    });
+    //Save the order in database
+    app.post("/orders", async (req, res) => {
+      const orders = req.body;
+      console.log(orders);
+      const result = await ordersCollections.insertOne(orders);
+      res.send({ success: true, result });
+    });
+  } finally {
+  }
+}
+
+run().catch(console.dir);
 
 // golab call
 app.get("/", (req, res) => {
