@@ -61,7 +61,7 @@ async function run() {
       res.send({ success: true, result });
     });
 
-    //Get per user order
+    //Get order per user
     app.get("/orders", verifyJWT, async (req, res) => {
       const customerEmail = req.query.customerEmail;
       const decodedEmail = req.decoded.email;
@@ -73,6 +73,11 @@ async function run() {
       } else {
         return res.status(403).send({ message: "Forbidden Access" });
       }
+    });
+    //Get Order For Admin
+    app.get("/orderadmin", verifyJWT, async (req, res) => {
+      const result = await ordersCollections.find().toArray();
+      res.send(result);
     });
 
     // Update or Insert a neW User
