@@ -53,6 +53,14 @@ async function run() {
       const productDetails = await goodsCollections.findOne(query);
       res.send(productDetails);
     });
+    //Product Delete
+    app.delete("/goods/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const productDeleted = await goodsCollections.deleteOne(query);
+      res.send(productDeleted);
+    });
+
     //Save the order in database
     app.post("/orders", async (req, res) => {
       const orders = req.body;
