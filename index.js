@@ -146,6 +146,15 @@ async function run() {
     });
     //
     //
+    //Unpaid order Delete by user
+    app.delete("/orders/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const orderDeleted = await ordersCollections.deleteOne(query);
+      res.send(orderDeleted);
+    });
+    //
+    //
     //Get Order For Admin
     app.get("/orderadmin", verifyJWT, async (req, res) => {
       const result = await ordersCollections.find().toArray();
