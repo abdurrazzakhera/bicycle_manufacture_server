@@ -4,7 +4,8 @@ const app = express();
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
-const res = require("express/lib/response");
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+// const res = require("express/lib/response");
 const port = process.env.PORT || 5000;
 
 //Midle Werere
@@ -39,7 +40,26 @@ async function run() {
     const goodsCollections = client.db("manufacture").collection("services");
     const ordersCollections = client.db("manufacture").collection("orders");
     const usersCollections = client.db("manufacture").collection("users");
+    const paymentCollections = client.db("manufacture").collection("payments");
 
+    //Payment price intent
+    app.post("/create-payment-intent", verifyJWT, async (req, res) => {
+      const services = req.body;
+      const price = services.totalPrice;
+      const amount = price * 100;
+
+      // Create a PaymentIntent with the order amount and currency
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: "usd",
+        payment_method_types: ["card"],
+      });
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+      });
+    });
+    //
+    //
     //Add Goods By Admin
     app.post("/goods", verifyJWT, async (req, res) => {
       const goods = req.body;
@@ -47,12 +67,15 @@ async function run() {
       const result = await goodsCollections.insertOne(goods);
       res.send(result);
     });
-
+    //
+    //
     // * MongoDb User Collection
     app.get("/goods", async (req, res) => {
       const result = await goodsCollections.find().toArray();
       res.send(result);
     });
+    //
+    //
     //Call Single product from the database
     app.get("/goods/:id", async (req, res) => {
       const id = req.params.id;
@@ -61,14 +84,17 @@ async function run() {
       const productDetails = await goodsCollections.findOne(query);
       res.send(productDetails);
     });
-    //Product Delete
+    //
+    //
+    //Product Delete for Admin Control
     app.delete("/goods/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
       const productDeleted = await goodsCollections.deleteOne(query);
       res.send(productDeleted);
     });
-
+    //
+    //
     //Save the order in database
     app.post("/orders", async (req, res) => {
       const orders = req.body;
@@ -76,7 +102,8 @@ async function run() {
       const result = await ordersCollections.insertOne(orders);
       res.send({ success: true, result });
     });
-
+    //
+    //
     //Get order per user
     app.get("/orders", verifyJWT, async (req, res) => {
       const customerEmail = req.query.customerEmail;
@@ -90,12 +117,42 @@ async function run() {
         return res.status(403).send({ message: "Forbidden Access" });
       }
     });
+    //
+    //
+    //Get order from user Payment
+    app.get("/orders/:id", verifyJWT, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      // console.log(query);
+      const result = await ordersCollections.findOne(query);
+      res.send(result);
+    });
+    //
+    //
+    //Order Collection Update after payment;
+    app.patch("/orders/:id", verifyJWT, async (req, res) => {
+      const id = req.params.id;
+      const payment = req.body;
+      const filter = { _id: ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          paid: true,
+          transactionId: payment.transectionId,
+        },
+      };
+      const result = await paymentCollections.insertOne(payment);
+      const updatedOrder = await ordersCollections.updateOne(filter, updateDoc);
+      res.send(updateDoc);
+    });
+    //
+    //
     //Get Order For Admin
     app.get("/orderadmin", verifyJWT, async (req, res) => {
       const result = await ordersCollections.find().toArray();
       res.send(result);
     });
-
+    //
+    //
     // Update or Insert a neW User
     app.put("/users/:email", async (req, res) => {
       const email = req.params.email;
