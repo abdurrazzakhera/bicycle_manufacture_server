@@ -5,7 +5,6 @@ require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
-// const res = require("express/lib/response");
 const port = process.env.PORT || 5000;
 
 //Midle Werere
@@ -63,7 +62,7 @@ async function run() {
     //Add Goods By Admin
     app.post("/goods", verifyJWT, async (req, res) => {
       const goods = req.body;
-      console.log(goods);
+      // console.log(goods);
       const result = await goodsCollections.insertOne(goods);
       res.send(result);
     });
@@ -79,7 +78,7 @@ async function run() {
     //Call Single product from the database
     app.get("/goods/:id", async (req, res) => {
       const id = req.params.id;
-      console.log(id);
+      // console.log(id);
       const query = { _id: ObjectId(id) };
       const productDetails = await goodsCollections.findOne(query);
       res.send(productDetails);
@@ -98,7 +97,7 @@ async function run() {
     //Save the order in database
     app.post("/orders", async (req, res) => {
       const orders = req.body;
-      console.log(orders);
+      // console.log(orders);
       const result = await ordersCollections.insertOne(orders);
       res.send({ success: true, result });
     });
@@ -143,6 +142,21 @@ async function run() {
       const result = await paymentCollections.insertOne(payment);
       const updatedOrder = await ordersCollections.updateOne(filter, updateDoc);
       res.send(updateDoc);
+    });
+    //
+    //
+    //Ship Status update by admin/ procesing start
+    app.patch("/ordersShiped/:id", verifyJWT, async (req, res) => {
+      const id = req.params.id;
+      // console.log(id);
+      const filter = { _id: ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          shiped: true,
+        },
+      };
+      const updatedOrder = await ordersCollections.updateOne(filter, updateDoc);
+      res.send(updatedOrder);
     });
     //
     //
