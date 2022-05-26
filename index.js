@@ -40,6 +40,14 @@ async function run() {
     const ordersCollections = client.db("manufacture").collection("orders");
     const usersCollections = client.db("manufacture").collection("users");
 
+    //Add Goods By Admin
+    app.post("/goods", verifyJWT, async (req, res) => {
+      const goods = req.body;
+      console.log(goods);
+      const result = await goodsCollections.insertOne(goods);
+      res.send(result);
+    });
+
     // * MongoDb User Collection
     app.get("/goods", async (req, res) => {
       const result = await goodsCollections.find().toArray();
