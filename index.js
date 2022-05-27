@@ -40,6 +40,10 @@ async function run() {
     const ordersCollections = client.db("manufacture").collection("orders");
     const usersCollections = client.db("manufacture").collection("users");
     const paymentCollections = client.db("manufacture").collection("payments");
+    const reviewsCollections = client.db("manufacture").collection("reviews");
+    const shipedOrderCollections = client
+      .db("manufacture")
+      .collection("ShipedOrder");
 
     //Payment price intent
     app.post("/create-payment-intent", verifyJWT, async (req, res) => {
@@ -92,6 +96,35 @@ async function run() {
       const productDeleted = await goodsCollections.deleteOne(query);
       res.send(productDeleted);
     });
+    //
+    //
+    //Avail able quantity
+    // app.get("/availableQunatiy", async (req, res) => {
+    //   const name = req.query.name;
+    //   //all service get
+    //   const allGoods = await goodsCollections.find().toArray();
+    //   const query = { productName: name };
+    //   //fine product shiped
+    //   const shipedOrders = await shipedOrderCollections.find(query).toArray();
+    //   console.log(shipedOrders);
+    //   // filter the goods
+    //   allGoods.forEach((singleGoods) => {
+    //     //find that are order services
+    //     const goodOrder = shipedOrders.filter(
+    //       (order) => order.productName === singleGoods.name
+    //     );
+    //     // // quntity
+    //     const shipedQuntity = goodOrder.map((goods) => goods.quantity);
+    //     // let item;
+    //     // const shiped = shipedQuntity.map((i) => (item = i));
+
+    //     const newAvailable = singleGoods.available - shipedQuntity[0];
+    //     console.log(goodOrder);
+    //     // console.log((singleGoods.available = newAvailable));
+    //   });
+    //   // console.log(allGoods);
+    //   // res.send(allGoods);
+    // });
     //
     //
     //Save the order in database
@@ -149,12 +182,15 @@ async function run() {
     app.patch("/ordersShiped/:id", verifyJWT, async (req, res) => {
       const id = req.params.id;
       // console.log(id);
+      const shipedOrder = req.body;
+      console.log(shipedOrder);
       const filter = { _id: ObjectId(id) };
       const updateDoc = {
         $set: {
           shiped: true,
         },
       };
+      const result = await shipedOrderCollections.insertOne(shipedOrder);
       const updatedOrder = await ordersCollections.updateOne(filter, updateDoc);
       res.send(updatedOrder);
     });
@@ -231,6 +267,24 @@ async function run() {
       const resutl = await usersCollections.find().toArray();
       res.send(resutl);
     });
+    //
+    //
+    //Add Reviews By User
+    app.post("/review", verifyJWT, async (req, res) => {
+      const review = req.body;
+      // console.log(goods);
+      const result = await reviewsCollections.insertOne(review);
+      res.send(result);
+    });
+    //
+    //
+    //Get Review in home patge
+    app.get("/review", async (req, res) => {
+      const result = await reviewsCollections.find().toArray();
+      res.send(result);
+    });
+
+    //end of try method
   } finally {
   }
 }
