@@ -269,6 +269,16 @@ async function run() {
     });
     //
     //
+    //admin useer info
+    app.get("/adminrole", verifyJWT, async (req, res) => {
+      const email = req.query.email;
+      console.log(email);
+      const query = { email: email };
+      const resutl = await usersCollections.findOne(query);
+      res.send(resutl);
+    });
+    //
+    //
     //Add Reviews By User
     app.post("/review", verifyJWT, async (req, res) => {
       const review = req.body;
