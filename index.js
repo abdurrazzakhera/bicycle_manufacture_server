@@ -66,7 +66,6 @@ async function run() {
     //Add Goods By Admin
     app.post("/goods", verifyJWT, async (req, res) => {
       const goods = req.body;
-      // console.log(goods);
       const result = await goodsCollections.insertOne(goods);
       res.send(result);
     });
@@ -82,7 +81,6 @@ async function run() {
     //Call Single product from the database
     app.get("/goods/:id", async (req, res) => {
       const id = req.params.id;
-      // console.log(id);
       const query = { _id: ObjectId(id) };
       const productDetails = await goodsCollections.findOne(query);
       res.send(productDetails);
@@ -98,39 +96,9 @@ async function run() {
     });
     //
     //
-    //Avail able quantity
-    // app.get("/availableQunatiy", async (req, res) => {
-    //   const name = req.query.name;
-    //   //all service get
-    //   const allGoods = await goodsCollections.find().toArray();
-    //   const query = { productName: name };
-    //   //fine product shiped
-    //   const shipedOrders = await shipedOrderCollections.find(query).toArray();
-    //   console.log(shipedOrders);
-    //   // filter the goods
-    //   allGoods.forEach((singleGoods) => {
-    //     //find that are order services
-    //     const goodOrder = shipedOrders.filter(
-    //       (order) => order.productName === singleGoods.name
-    //     );
-    //     // // quntity
-    //     const shipedQuntity = goodOrder.map((goods) => goods.quantity);
-    //     // let item;
-    //     // const shiped = shipedQuntity.map((i) => (item = i));
-
-    //     const newAvailable = singleGoods.available - shipedQuntity[0];
-    //     console.log(goodOrder);
-    //     // console.log((singleGoods.available = newAvailable));
-    //   });
-    //   // console.log(allGoods);
-    //   // res.send(allGoods);
-    // });
-    //
-    //
     //Save the order in database
     app.post("/orders", async (req, res) => {
       const orders = req.body;
-      // console.log(orders);
       const result = await ordersCollections.insertOne(orders);
       res.send({ success: true, result });
     });
@@ -140,7 +108,6 @@ async function run() {
     app.get("/orders", verifyJWT, async (req, res) => {
       const customerEmail = req.query.customerEmail;
       const decodedEmail = req.decoded.email;
-      // console.log(decodedEmail);
       if (customerEmail === decodedEmail) {
         const query = { customerEmail: customerEmail };
         const resulte = await ordersCollections.find(query).toArray();
@@ -155,7 +122,6 @@ async function run() {
     app.get("/orders/:id", verifyJWT, async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
-      // console.log(query);
       const result = await ordersCollections.findOne(query);
       res.send(result);
     });
@@ -181,9 +147,7 @@ async function run() {
     //Ship Status update by admin/ procesing start
     app.patch("/ordersShiped/:id", verifyJWT, async (req, res) => {
       const id = req.params.id;
-      // console.log(id);
       const shipedOrder = req.body;
-      console.log(shipedOrder);
       const filter = { _id: ObjectId(id) };
       const updateDoc = {
         $set: {
@@ -272,7 +236,6 @@ async function run() {
     //admin useer info
     app.get("/adminrole", verifyJWT, async (req, res) => {
       const email = req.query.email;
-      console.log(email);
       const query = { email: email };
       const resutl = await usersCollections.findOne(query);
       res.send(resutl);
@@ -282,7 +245,6 @@ async function run() {
     //Add Reviews By User
     app.post("/review", verifyJWT, async (req, res) => {
       const review = req.body;
-      // console.log(goods);
       const result = await reviewsCollections.insertOne(review);
       res.send(result);
     });
